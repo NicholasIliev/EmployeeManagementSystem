@@ -45,68 +45,82 @@
 
                     <button type="submit" class="submit-btn">Display Employees</button>
                 </form>
+
+                <?php
+                // Include database connection code
+                include 'db_connect.php';
+
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+                    // Retrieve and sanitize form data
+                    $department_id = mysqli_real_escape_string($con, $_POST['department']);
+                    $emergency_relationship = mysqli_real_escape_string($con, $_POST['emergency_relationship']);
+
+                    // Query to retrieve employees based on department and emergency relationship
+                    $query = "SELECT e.emp_id, e.name AS employee_name, d.name AS department_name, 
+                                    ec.name AS emergency_contact_name, ec.relationship AS emergency_contact_relationship
+                            FROM employee e
+                            JOIN department d ON e.department_id = d.department_id
+                            JOIN emergencycontact ec ON e.emergency_contact_id = ec.emergency_contact_id
+                            WHERE d.department_id = '$department_id' AND ec.relationship = '$emergency_relationship'";
+
+                    $result = mysqli_query($con, $query);
+
+                    // Check if there are any results
+                    if (mysqli_num_rows($result) > 0) {
+                        echo '<br>';
+                        echo '<br>';
+                        echo '<br>';
+                        echo "<h2 align='center' style='color:#2980b9;'>Employees based on Department and Emergency Contact</h2>";
+                        echo '<br>';
+                        echo '<br>';
+                        echo "<table border='1' align='center' width='80%'
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Employee Name</th>
+                                    <th>Department</th>
+                                    <th>Emergency Contact Name</th>
+                                    <th>Emergency Contact Relationship</th>
+                                    <th>Manager Name</th>
+                                </tr>";
+
+                        while ($row = mysqli_fetch_assoc($result)) {
+                            echo "<tr>
+                                    <td>{$row['emp_id']}</td>
+                                    <td>{$row['employee_name']}</td>
+                                    <td>{$row['department_name']}</td>
+                                    <td>{$row['emergency_contact_name']}</td>
+                                    <td>{$row['emergency_contact_relationship']}</td>";
+
+                            // Get manager name
+                            // $emp_id = $row['emp_id'];
+                            // $manager_query = "SELECT e.name FROM employee e WHERE e.emp_id = (
+                            //                     SELECT manager_id FROM employee WHERE emp_id = '$emp_id')";
+                            // $manager_result = mysqli_query($con, $manager_query);
+
+                            // if ($manager_row = mysqli_fetch_assoc($manager_result)) {
+                            //     echo "<td>{$manager_row['name']}</td>";
+                            // } else {
+                            //     echo "<td>No Manager</td>";
+                            // }
+
+                            echo "</tr>";
+                        }
+
+                        echo "</table>";
+                    } else {
+                        echo "No results found.";
+                    }
+
+                    // Close the database connection
+                    mysqli_close($con);
+                }
+                ?>
+
+
             </section>
         </div>
     </div>
 </body>
 </html>
 
-<?php
-// Include database connection code
-include 'db_connect.php';
-
-// Retrieve and sanitize form data
-$department = mysqli_real_escape_string($con, $_POST['department']);
-$emergency_relationship = mysqli_real_escape_string($con, $_POST['emergency_relationship']);
-
-// Query to retrieve employees based on department and emergency relationship
-$query = "SELECT e.name AS employee_name, d.name AS department_name, e.manager_id,
-                ec.name AS emergency_contact_name, ec.relationship AS emergency_contact_relationship
-          FROM employee e
-          JOIN department d ON e.department_id = d.department_id
-          JOIN emergencycontact ec ON e.emergency_contact_id = ec.emergency_contact_id
-          WHERE d.name = '$department' AND ec.relationship = '$emergency_relationship'";
-
-$result = mysqli_query($con, $query);
-
-// Check if there are any results
-if (mysqli_num_rows($result) > 0) {
-    echo "<h2>Employees based on Department and Emergency Contact</h2>";
-    echo "<table border='1'>
-            <tr>
-                <th>Employee Name</th>
-                <th>Department</th>
-                <th>Emergency Contact Name</th>
-                <th>Emergency Contact Relationship</th>
-                <th>Manager Name</th>
-            </tr>";
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo "<tr>
-                <td>{$row['employee_name']}</td>
-                <td>{$row['department_name']}</td>
-                <td>{$row['emergency_contact_name']}</td>
-                <td>{$row['emergency_contact_relationship']}</td>";
-
-        // Get manager name
-        $manager_id = $row['manager_id'];
-        $manager_query = "SELECT name FROM employee WHERE emp_id = '$manager_id'";
-        $manager_result = mysqli_query($con, $manager_query);
-
-        if ($manager_row = mysqli_fetch_assoc($manager_result)) {
-            echo "<td>{$manager_row['name']}</td>";
-        } else {
-            echo "<td>No Manager</td>";
-        }
-
-        echo "</tr>";
-    }
-
-    echo "</table>";
-} else {
-    echo "No results found.";
-}
-
-// Close the database connection
-mysqli_close($con);
-?>
