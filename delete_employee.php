@@ -28,17 +28,17 @@
             </header>
 
             <section>
-            <form action="delete_employee.php" method="post" class="employee-form">
-                <div class="form-group">
-                    <label for="emp_id">Delete Employee ID:</label>
-                    <input type="text" name="emp_id" required>
-                </div>
-                <div class="form-group">
-                    <label for="deleting_employee_id">Deleter ID:</label>
-                    <input type="text" name="deleting_employee_id" required>
-                </div>
-                <button type="submit" class="submit-btn">Delete Employee</button>
-            </form>
+                <form action="delete_employee.php" method="post" class="employee-form">
+                    <div class="form-group">
+                        <label for="emp_id">Delete Employee ID:</label>
+                        <input type="text" name="emp_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deleting_employee_id">Deleter ID:</label>
+                        <input type="text" name="deleting_employee_id" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Delete Employee</button>
+                </form>
             </section>
         </div>
     </div>
@@ -53,6 +53,7 @@ include 'db_connect.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve and sanitize form data
     $emp_id = mysqli_real_escape_string($con, $_POST['emp_id']);
+    $deleting_employee_id = mysqli_real_escape_string($con, $_POST['deleting_employee_id']);
 
     // Check if the employee ID exists
     $check_employee_query = "SELECT * FROM employee WHERE emp_id = '$emp_id'";
@@ -62,19 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Employee with the specified ID does not exist.";
     } else {
         // Get the associated emergency_contact_id
-        $get_employee_info_query = "SELECT emergency_contact_id FROM employee WHERE emp_id = '$emp_id'";
-        $employee_info_result = mysqli_query($con, $get_employee_info_query);
+        $get_emergency_contact_query = "SELECT emergency_contact_id FROM employee WHERE emp_id = '$emp_id'";
+        $emergency_contact_result = mysqli_query($con, $get_emergency_contact_query);
 
-        if ($employee_info_row = mysqli_fetch_assoc($employee_info_result)) {
-            $emergency_contact_id = $employee_info_row['emergency_contact_id'];
-
-
-            // Get the current date and time
-            $termination_date = date('Y-m-d');
-            $termination_time = date('H:i:s');
-
-            // Get the ID of the user who is deleting the employee
-            $deleting_employee_id = mysqli_real_escape_string($con, $_POST['deleting_employee_id']);
+        if ($emergency_contact_row = mysqli_fetch_assoc($emergency_contact_result)) {
+            $emergency_contact_id = $emergency_contact_row['emergency_contact_id'];
 
             // Delete the employee
             $delete_employee_query = "DELETE FROM employee WHERE emp_id = '$emp_id'";
@@ -82,25 +75,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Delete the associated emergency contact
             $delete_emergency_query = "DELETE FROM emergencycontact WHERE emergency_contact_id = $emergency_contact_id";
 
+            // Start a transaction
+            mysqli_begin_transaction($con);
+
             if (mysqli_query($con, $delete_employee_query) && mysqli_query($con, $delete_emergency_query)) {
-                // Log the termination in the terminations_log table
+                // Commit the transaction
+                mysqli_commit($con);
+
+                // Log the deletion in the terminations_log table
+                $deletion_date = date('Y-m-d');
+                $deletion_time = date('H:i:s');
                 $log_termination_query = "INSERT INTO terminations_log (emp_id, termination_date, termination_time, deleting_employee_id)
-                                          VALUES ('$emp_id', '$termination_date', '$termination_time', '$deleting_employee_id')";
+                                          VALUES ('$emp_id', '$deletion_date', '$deletion_time', '$deleting_employee_id')";
 
                 if (mysqli_query($con, $log_termination_query)) {
-                    echo "Employee and associated data deleted successfully and termination logged!";
+                    echo "Employee and associated data deleted successfully, and termination logged!";
                 } else {
                     // Log the error and present a user-friendly message
                     error_log("Error: " . $log_termination_query . "\n" . mysqli_error($con), 0);
                     echo "An error occurred while logging the termination. Please try again later.";
                 }
             } else {
+                // Roll back the transaction in case of an error
+                mysqli_rollback($con);
+
                 // Log the error and present a user-friendly message
                 error_log("Error: " . $delete_employee_query . "\n" . mysqli_error($con), 0);
                 echo "An error occurred while deleting the employee. Please try again later.";
             }
         } else {
-            echo "Error retrieving employee information.";
+            echo "Error retrieving emergency contact information.";
         }
     }
 }
@@ -108,3 +112,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Close the database connection
 mysqli_close($con);
 ?>
+
