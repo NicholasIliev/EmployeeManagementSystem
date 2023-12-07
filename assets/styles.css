@@ -1,0 +1,125 @@
+/* assets/styles.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f2f2f2;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h3 {
+    color: #3498db;
+    margin-bottom: 20px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #ecf0f1;
+    display: block;
+    padding: 15px 10px;
+    transition: background-color 0.3s;
+}
+
+.sidebar a:hover {
+    background-color: #3498db;
+}
+
+.sidebar .active {
+    background-color: #3498db;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    color: #3498db;
+}
+
+header p.lead {
+    color: #7f8c8d;
+}
+
+/* Styles for form groups to add spacing between elements */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Styles for the form */
+.employee-form {
+    width: 50%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.employee-form:hover {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Highlighted box shadow on hover */
+    transform: scale(1.02); /* Slightly scale up the form on hover */
+}
+
+/* Styles for form labels */
+.employee-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Styles for form input fields */
+.employee-form input,
+.employee-form select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 3px;
+    margin-bottom: 10px;
+}
+
+/* Styles for the submit button */
+.employee-form .submit-btn {
+    background-color: #3498db;
+    color: #ffffff;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Hover effect for the submit button */
+.employee-form .submit-btn:hover {
+    background-color: #2980b9;
+}
+
