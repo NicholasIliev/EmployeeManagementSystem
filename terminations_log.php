@@ -41,12 +41,12 @@
                 if (mysqli_num_rows($result) > 0) {
                     echo '<div style="text-align: center;">';
                     echo '</div>';
-                    echo "<table border='1' align='center' width='80%'
-                            <tr>
-                                <th>Employee ID Left</th>
-                                <th>Termination Date</th>
-                                <th>Termination Time</th>
-                                <th>Deleting Employee ID</th>
+                    echo "<table border='1' align='center' style='width: 80%; margin-top: 20px; background-color: white;'>
+                            <tr style='background-color: #2980b980;'>
+                                <th style='padding: 8px;'>Employee ID Left</th>
+                                <th style='padding: 8px;'>Termination Date</th>
+                                <th style='padding: 8px;'>Termination Time</th>
+                                <th style='padding: 8px;'>Deleting Employee ID</th>
                             </tr>";
 
                     while ($row = mysqli_fetch_assoc($result)) {

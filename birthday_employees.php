@@ -9,6 +9,7 @@
 <body>
     <div class="container">
         <div class="sidebar">
+            <h3>Kilburnazon</h3>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
                 <li><a href="add_employee.php">Add Employee</a></li>
@@ -27,68 +28,50 @@
             </header>
 
             <section>
-                <?php
-                // Include database connection code
-                include 'db_connect.php';
+                
+            <?php
+            include 'db_connect.php';
 
-                // Get the current month
-                $currentMonth = date('m');
+            // Get the current month
+            $currentMonth = date('m');
 
-                // Generate a unique table name based on the current timestamp
-                $tableName = 'birthday_employees_' . time();
+            // Generate SQL query to retrieve employees with birthdays in the current month
+            $selectQuery = "SELECT emp_id, name, dob FROM employee WHERE MONTH(dob) = $currentMonth
+                            ORDER BY DAY(dob)";
 
-                // Generate SQL query to create a regular table for employees with birthdays in the current month
-                $createTableQuery = "CREATE TABLE $tableName AS
-                                    SELECT * FROM employee WHERE MONTH(dob) = $currentMonth
-                                    ORDER BY DAY(dob)";
+            $result = mysqli_query($con, $selectQuery);
 
+            // Check if there are any results
+            if ($result && mysqli_num_rows($result) > 0) {
+                echo '<div style="text-align: center;">';
 
-                // Execute the CREATE TABLE query
-                if (mysqli_query($con, $createTableQuery)) {
-                    echo "<p align='center'>Table '$tableName' created successfully.</p>";
+                echo "<table border='1' align='center' style='width: 80%; margin-top: 20px; background-color: white;'>
+                        <tr style='background-color: #2980b980;'>
+                            <th style='padding: 8px;'>Employee ID</th>
+                            <th style='padding: 8px;'>Name</th>
+                            <th style='padding: 8px;'>Date of Birth</th>
+                        </tr>";
 
-                    // Generate SQL query to retrieve employees with birthdays in the current month
-                    $selectQuery = "SELECT * FROM $tableName";
-
-                    $result = mysqli_query($con, $selectQuery);
-
-                    // Check if there are any results
-                    if (mysqli_num_rows($result) > 0) {
-                        echo '<div style="text-align: center;">';
-                        echo '</div>';
-                        
-                        echo "<table border='1' align='center' width='80%'>
-                                <tr>
-                                    <th>Employee ID</th>
-                                    <th>Name</th>
-                                    <th>Date of Birth</th>
-                                </tr>";
-
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr>
-                                    <td>{$row['emp_id']}</td>
-                                    <td>{$row['name']}</td>
-                                    <td>{$row['dob']}</td>
-                                </tr>";
-                        }
-
-                        echo "</table>";
-
-                        echo "</table>";
-                    } else {
-                        echo "No results found.";
-                    }
-
-                    // Drop the temporary table after use
-                    $dropTableQuery = "DROP TABLE IF EXISTS $tableName";
-                    mysqli_query($con, $dropTableQuery);
-                } else {
-                    echo "Error creating table: " . mysqli_error($con);
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo "<tr>
+                            <td>{$row['emp_id']}</td>
+                            <td>{$row['name']}</td>
+                            <td>{$row['dob']}</td>
+                        </tr>";
                 }
 
-                // Close the database connection
-                mysqli_close($con);
-                ?>
+                echo "</table>";
+
+                echo '</div>';
+            } else {
+                echo "No results found.";
+            }
+
+            // Close the database connection
+            mysqli_close($con);
+            ?>
+
+
             </section>
         </div>
     </div>

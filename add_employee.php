@@ -116,6 +116,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $emergency_relationship = mysqli_real_escape_string($con, $_POST['emergency_relationship']);
     $emergency_phone = mysqli_real_escape_string($con, $_POST['emergency_phone']);
 
+    // Get the highest manager_id from the management table
+    $get_highest_manager_id_query = "SELECT MAX(manager_id) AS max_manager_id FROM management";
+    $result = mysqli_query($con, $get_highest_manager_id_query);
+    $row = mysqli_fetch_assoc($result);
+    $max_manager_id = $row['max_manager_id'];
+
+    // Assign a random manager_id between 1 and the highest manager_id
+    $manager_id = rand(1, $max_manager_id);
+
     // Check for duplicate employee ID
     $check_duplicate_query = "SELECT emp_id FROM employee WHERE emp_id = '$emp_id'";
     $result = mysqli_query($con, $check_duplicate_query);
@@ -132,14 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $emergency_contact_id = mysqli_insert_id($con);
 
         // SQL query to insert employee data into the database using prepared statements
-        $insert_query = "INSERT INTO employee (emp_id, name, address, salary, dob, nin, department_id, emergency_contact_id) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO employee (emp_id, name, address, salary, dob, nin, department_id, emergency_contact_id, manager_id) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // Create a prepared statement
         $stmt = mysqli_prepare($con, $insert_query);
 
         // Bind parameters to the prepared statement
-        mysqli_stmt_bind_param($stmt, "ssssssss", $emp_id, $name, $address, $salary, $dob, $nin, $department_id, $emergency_contact_id);
+        mysqli_stmt_bind_param($stmt, "sssssssss", $emp_id, $name, $address, $salary, $dob, $nin, $department_id, $emergency_contact_id, $manager_id);
 
         // Execute the prepared statement
         if (mysqli_stmt_execute($stmt)) {
@@ -154,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_close($stmt);
     }
 }
+
 
 // Close the database connection
 mysqli_close($con);
