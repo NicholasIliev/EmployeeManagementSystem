@@ -9,9 +9,9 @@ $database = 'kilburnazon2';
 $con = mysqli_connect($serverName, $username, $password, $database);
 
 // Check the connection
-if (!$con) {
-    die("Connection failed: " . mysqli_connect_error());
-} else {
-    echo "Connected successfully!!!!";
-}
+// if (!$con) {
+//     die("Connection failed: " . mysqli_connect_error());
+// } else {
+//     echo "Connected successfully!!!!";
+// }
 ?>

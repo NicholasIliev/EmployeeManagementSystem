@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/styles.css">
-    <title>Employee Management System</title>
+    <title>Terminations Log</title>
 </head>
 <body>
     <div class="container">
@@ -17,21 +17,58 @@
                 <li><a href="delete_employee.php">Delete Employee</a></li>
                 <li><a href="display_employees.php">Display Employees</a></li>
                 <li><a href="birthday_employees.php">Birthday Employees</a></li>
-                <li><a href="#" class="active">Terminations Log</a></li>
+                <li><a href="terminations_log.php" class="active">Terminations Log</a></li>
             </ul>
         </div>
 
         <div class="content">
             <header>
-                <h1>Employee Management System</h1>
-                <p class="lead">Efficiently manage your workforce.</p>
+                <h1>Terminations Log</h1>
+                <p class="lead">Kilburnazon</p>
             </header>
 
-            <!-- The rest of your content goes here -->
-            <!-- ... -->
+            <section>
+                <?php
+                // Include database connection code
+                include 'db_connect.php';
+
+                // Query to retrieve termination records
+                $query = "SELECT * FROM terminations_log";
+
+                $result = mysqli_query($con, $query);
+
+                // Check if there are any results
+                if (mysqli_num_rows($result) > 0) {
+                    echo '<div style="text-align: center;">';
+                    echo '</div>';
+                    echo "<table border='1' align='center' width='80%'
+                            <tr>
+                                <th>Employee ID Left</th>
+                                <th>Termination Date</th>
+                                <th>Termination Time</th>
+                                <th>Deleting Employee ID</th>
+                            </tr>";
+
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        echo "<tr>
+                                <td>{$row['emp_id']}</td>
+                                <td>{$row['termination_date']}</td>
+                                <td>{$row['termination_time']}</td>
+                                <td>{$row['deleting_employee_id']}</td>
+                            </tr>";
+                    }
+
+                    echo "</table>";
+                } else {
+                    echo "No termination records found.";
+                }
+
+                // Close the database connection
+                mysqli_close($con);
+                ?>
+            </section>
         </div>
     </div>
-
-
 </body>
 </html>
+

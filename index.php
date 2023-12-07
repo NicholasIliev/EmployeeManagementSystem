@@ -18,7 +18,6 @@
                 <li><a href="display_employees.php">Display Employees</a></li>
                 <li><a href="birthday_employees.php">Birthday Employees</a></li>
                 <li><a href="terminations_log.php">Terminations Log</a></li>
-                <li><a href="test_connection.php">Test Connection</a></li>
             </ul>
         </div>
 
@@ -28,8 +27,6 @@
                 <p class="lead">Efficiently manage your workforce.</p>
             </header>
 
-            <!-- The rest of your content goes here -->
-            <!-- ... -->
         </div>
     </div>
 
