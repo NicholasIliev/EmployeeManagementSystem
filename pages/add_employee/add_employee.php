@@ -131,8 +131,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $next_manager_id = rand(1, $max_manager_id);
     }
+
     // Generate a random employee.manager_id between 1 and max val management.manager_id
     $random_employee_manager_id = rand(1, $max_manager_id);
+
+    // Ensure that $department_id is defined
+    $department_id = isset($department_id) ? $department_id : '';
+
+    // Ensure that other variables are defined
+    $emp_id = isset($emp_id) ? $emp_id : '';
+    $emergency_name = isset($emergency_name) ? $emergency_name : '';
+    $emergency_relationship = isset($emergency_relationship) ? $emergency_relationship : '';
+    $emergency_phone = isset($emergency_phone) ? $emergency_phone : '';
 
     // Check for duplicate employee ID
     $check_duplicate_query = "SELECT emp_id FROM employee WHERE emp_id = '$emp_id'";
@@ -174,6 +184,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mysqli_stmt_bind_param($stmt_update_management, "sss", $fetched_emp_id, $fetched_name, $next_manager_id);
                 mysqli_stmt_execute($stmt_update_management);
                 mysqli_stmt_close($stmt_update_management);
+            }
+
+            // Insert emp_id and department-specific ID into the respective department tables
+            switch ($department_id) {
+                case 1: // HR
+                    $get_highest_hr_id_query = "SELECT MAX(hr_id) AS max_hr_id FROM hr";
+                    $result_hr = mysqli_query($con, $get_highest_hr_id_query);
+                    $row_hr = mysqli_fetch_assoc($result_hr);
+                    $max_hr_id = $row_hr['max_hr_id'];
+                    $next_hr_id = $max_hr_id + 1;
+                    $random_department_id = $next_hr_id;
+
+                    $insert_hr_query = "INSERT INTO hr (emp_id, hr_id) VALUES (?, ?)";
+                    $stmt_insert_hr = mysqli_prepare($con, $insert_hr_query);
+                    mysqli_stmt_bind_param($stmt_insert_hr, "ss", $fetched_emp_id, $random_department_id);
+                    mysqli_stmt_execute($stmt_insert_hr);
+                    mysqli_stmt_close($stmt_insert_hr);
+                    break;
+                case 3: // Packagers
+                    $get_highest_packager_id_query = "SELECT MAX(packager_id) AS max_packager_id FROM packagers";
+                    $result_packager = mysqli_query($con, $get_highest_packager_id_query);
+                    $row_packager = mysqli_fetch_assoc($result_packager);
+                    $max_packager_id = $row_packager['max_packager_id'];
+                    $next_packager_id = $max_packager_id + 1;
+                    $random_department_id = $next_packager_id;
+
+                    $insert_packager_query = "INSERT INTO packagers (emp_id, packager_id) VALUES (?, ?)";
+                    $stmt_insert_packager = mysqli_prepare($con, $insert_packager_query);
+                    mysqli_stmt_bind_param($stmt_insert_packager, "ss", $fetched_emp_id, $random_department_id);
+                    mysqli_stmt_execute($stmt_insert_packager);
+                    mysqli_stmt_close($stmt_insert_packager);
+                    break;
+                case 4: // Drivers
+                    $get_highest_driver_id_query = "SELECT MAX(driver_id) AS max_driver_id FROM driver";
+                    $result_driver = mysqli_query($con, $get_highest_driver_id_query);
+                    $row_driver = mysqli_fetch_assoc($result_driver);
+                    $max_driver_id = $row_driver['max_driver_id'];
+                    $next_driver_id = $max_driver_id + 1;
+                    $random_department_id = $next_driver_id;
+
+                    $insert_driver_query = "INSERT INTO driver (emp_id, driver_id) VALUES (?, ?)";
+                    $stmt_insert_driver = mysqli_prepare($con, $insert_driver_query);
+                    mysqli_stmt_bind_param($stmt_insert_driver, "ss", $fetched_emp_id, $random_department_id);
+                    mysqli_stmt_execute($stmt_insert_driver);
+                    mysqli_stmt_close($stmt_insert_driver);
+                    break;
+                // Add more cases as needed for other departments
             }
         } else {
             error_log("Error: " . $insert_query . "\n" . mysqli_error($con), 0);

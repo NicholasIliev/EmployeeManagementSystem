@@ -53,8 +53,25 @@ if (!isset($_SESSION['emp_id'])) {
     exit;
 }
 
-// Get logged in employee's ID
+// Get logged-in employee's ID
 $deleting_employee_id = $_SESSION['emp_id'];
+
+// Function to get the department table name
+function getDepartmentTable($department_id) {
+    switch ($department_id) {
+        case 1: // HR
+            return "hr";
+        case 2: // Management
+            return "management";
+        case 3: // Packagers
+            return "packagers";
+        case 4: // Drivers
+            return "driver";
+        // Add more cases as needed for other departments
+        default:
+            return "";
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $emp_id = mysqli_real_escape_string($con, $_POST['emp_id']);
@@ -81,93 +98,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $department_id = $employee_info_row['department_id'];
             $manager_id = $employee_info_row['manager_id'];
 
-            // If the employee is a manager store info for later deletion
-            // This is because the manager_id is a foreign key in the management table
-            $manager_info = null;
-            if ($department_id == 2) {
-                $get_manager_info_query = "SELECT * FROM management WHERE emp_id = ?";
-                $stmt_get_manager_info = mysqli_prepare($con, $get_manager_info_query);
-                mysqli_stmt_bind_param($stmt_get_manager_info, "s", $emp_id);
-                mysqli_stmt_execute($stmt_get_manager_info);
-                $manager_info_result = mysqli_stmt_get_result($stmt_get_manager_info);
+            // If the employee is HR, Packager, Manager, or Driver, store the info before deletion
+            $department_info = null;
+            if ($department_id == 1 || $department_id == 2 || $department_id == 3 || $department_id == 4) {
+                $get_department_info_query = "SELECT * FROM " . getDepartmentTable($department_id) . " WHERE emp_id = ?";
+                $stmt_get_department_info = mysqli_prepare($con, $get_department_info_query);
+                mysqli_stmt_bind_param($stmt_get_department_info, "s", $emp_id);
+                mysqli_stmt_execute($stmt_get_department_info);
+                $department_info_result = mysqli_stmt_get_result($stmt_get_department_info);
 
-                if ($manager_info_row = mysqli_fetch_assoc($manager_info_result)) {
-                    $manager_info = $manager_info_row;
+                if ($department_info_row = mysqli_fetch_assoc($department_info_result)) {
+                    $department_info = $department_info_row;
                 }
             }
 
-            // Update the manager_id for the employee being deleted
-            $update_employee_query = "UPDATE employee SET manager_id = NULL WHERE emp_id = ?";
-            $stmt_update_employee = mysqli_prepare($con, $update_employee_query);
-            mysqli_stmt_bind_param($stmt_update_employee, "s", $emp_id);
-
-            mysqli_begin_transaction($con);
-
-            if (mysqli_stmt_execute($stmt_update_employee)) {
-                mysqli_commit($con);
-
-                // Delete the employee from the employee table
-                $delete_employee_query = "DELETE FROM employee WHERE emp_id = ?";
-                $stmt_delete_employee = mysqli_prepare($con, $delete_employee_query);
-                mysqli_stmt_bind_param($stmt_delete_employee, "s", $emp_id);
+            // If employee is HR, Packager, Manager, or Driver delete the stored info
+            if ($department_info) {
+                $delete_stored_department_query = "DELETE FROM " . getDepartmentTable($department_id) . " WHERE emp_id = ?";
+                $stmt_delete_stored_department = mysqli_prepare($con, $delete_stored_department_query);
+                mysqli_stmt_bind_param($stmt_delete_stored_department, "s", $emp_id);
 
                 mysqli_begin_transaction($con);
 
-                if (mysqli_stmt_execute($stmt_delete_employee)) {
+                if (mysqli_stmt_execute($stmt_delete_stored_department)) {
                     mysqli_commit($con);
-
-                    // Delete the employee's emergency contact
-                    $delete_emergency_query = "DELETE FROM emergencycontact WHERE emergency_contact_id = ?";
-                    $stmt_delete_emergency = mysqli_prepare($con, $delete_emergency_query);
-                    mysqli_stmt_bind_param($stmt_delete_emergency, "s", $emergency_contact_id);
-
-                    mysqli_begin_transaction($con);
-
-                    if (mysqli_stmt_execute($stmt_delete_emergency)) {
-                        mysqli_commit($con);
-
-                        // Log the deletion in the terminations log
-                        $deletion_date = date('Y-m-d');
-                        $deletion_time = date('H:i:s');
-                        $log_termination_query = "INSERT INTO terminations_log (emp_id, termination_date, termination_time, deleting_employee_id)
-                                                  VALUES (?, '$deletion_date', '$deletion_time', '$deleting_employee_id')";
-                        $stmt_log_termination = mysqli_prepare($con, $log_termination_query);
-                        mysqli_stmt_bind_param($stmt_log_termination, "s", $emp_id);
-
-                        mysqli_begin_transaction($con);
-
-                        if (mysqli_stmt_execute($stmt_log_termination)) {
-                            mysqli_commit($con);
-                            echo "Employee, associated data, and termination logged successfully!";
-                        } else {
-                            mysqli_rollback($con);
-                            error_log("Error: " . $log_termination_query . "\n" . mysqli_error($con), 0);
-                            echo "An error occurred while logging the termination. Please try again later.";
-                        }
-                    } else {
-                        mysqli_rollback($con);
-                        error_log("Error: " . $delete_emergency_query . "\n" . mysqli_error($con), 0);
-                        echo "An error occurred while deleting the emergency contact. Please try again later.";
-                    }
+                    echo "Deleted HR, Packager, Manager, or Driver related records successfully!";
                 } else {
                     mysqli_rollback($con);
-                    error_log("Error: " . $delete_employee_query . "\n" . mysqli_error($con), 0);
-                    echo "An error occurred while deleting the employee. Please try again later.";
+                    error_log("Error: " . $delete_stored_department_query . "\n" . mysqli_error($con), 0);
+                    echo "An error occurred. Please contact the system administrator.";
                 }
-
-            } else {
-                mysqli_rollback($con);
-                error_log("Error: " . $update_employee_query . "\n" . mysqli_error($con), 0);
-                echo "An error occurred while updating employee records. Please try again later.";
             }
 
-            // If employee is manager delete the stored manager info
-            // 2 is manager department id
-            if ($department_id == 2 && $manager_info) {
-                $delete_stored_manager_query = "DELETE FROM management WHERE emp_id = ?";
-                $stmt_delete_stored_manager = mysqli_prepare($con, $delete_stored_manager_query);
-                mysqli_stmt_bind_param($stmt_delete_stored_manager, "s", $manager_info['emp_id']);
-                mysqli_stmt_execute($stmt_delete_stored_manager);
+            // Delete the employee from the employee table
+            $delete_employee_query = "DELETE FROM employee WHERE emp_id = ?";
+            $stmt_delete_employee = mysqli_prepare($con, $delete_employee_query);
+            mysqli_stmt_bind_param($stmt_delete_employee, "s", $emp_id);
+
+            // Delete the employee's emergency contact
+            $delete_emergency_query = "DELETE FROM emergencycontact WHERE emergency_contact_id = ?";
+            $stmt_delete_emergency = mysqli_prepare($con, $delete_emergency_query);
+            mysqli_stmt_bind_param($stmt_delete_emergency, "s", $emergency_contact_id);
+
+            mysqli_begin_transaction($con);
+
+            if (mysqli_stmt_execute($stmt_delete_employee) && mysqli_stmt_execute($stmt_delete_emergency)) {
+                mysqli_commit($con);
+                echo "Deleted employee and associated records successfully!";
+            } else {
+                mysqli_rollback($con);
+                error_log("Error deleting employee: " . mysqli_error($con), 0);
+                echo "An error occurred. Please contact the system administrator.";
             }
         } else {
             echo "Error retrieving employee information.";
@@ -176,3 +157,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 mysqli_close($con);
 ?>
+
