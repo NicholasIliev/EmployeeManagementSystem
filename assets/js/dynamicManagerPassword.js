@@ -16,10 +16,28 @@ document.addEventListener('DOMContentLoaded', function () {
         checkPasswordStrength(this.value);
     });
 
+    // Generate random password
+    var randomPasswordButton = document.getElementById('generateRandomPassword');
+    if (randomPasswordButton) {
+        randomPasswordButton.addEventListener('click', function () {
+            passwordInput.value = generateRandomPassword();
+            checkPasswordStrength(passwordInput.value);
+        });
+    }
+
+    function generateRandomPassword(length = 8) {
+        var characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var password = '';
+        for (var i = 0; i < length; i++) {
+            password += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return password;
+    }
+
     function checkPasswordStrength(password) {
         var strengthIndicator = document.getElementById('password-strength');
 
-        // Minimum length
+        // Min length
         var lengthValid = password.length >= 8;
 
         // Uppercase letter
