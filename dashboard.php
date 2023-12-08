@@ -1,3 +1,14 @@
+<?php
+// dashboard.php
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['emp_id'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,18 +29,19 @@
                 <li><a href="display_employees.php">Display Employees</a></li>
                 <li><a href="birthday_employees.php">Birthday Employees</a></li>
                 <li><a href="terminations_log.php">Terminations Log</a></li>
+                <li><a href="logout.php">Logout</a></li>
             </ul>
         </div>
 
         <div class="content">
             <header>
                 <h1>Employee Management System</h1>
-                <p class="lead">Efficiently manage your workforce.</p>
+                <p class="lead">Welcome, <?php echo $_SESSION['name']; ?>! Efficiently manage your workforce.</p>
             </header>
 
+            <!-- Other dashboard content goes here -->
         </div>
     </div>
-
 
 </body>
 </html>

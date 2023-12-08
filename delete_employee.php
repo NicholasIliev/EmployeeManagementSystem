@@ -11,13 +11,14 @@
         <div class="sidebar">
             <h3>Kilburnazon</h3>
             <ul>
-                <li><a href="index.php">Dashboard</a></li>
+                <li><a href="dashboard.php">Dashboard</a></li>
                 <li><a href="add_employee.php">Add Employee</a></li>
                 <li><a href="update_employee.php">Update Employee</a></li>
                 <li><a href="delete_employee.php" class="active">Delete Employee</a></li>
                 <li><a href="display_employees.php">Display Employees</a></li>
                 <li><a href="birthday_employees.php">Birthday Employees</a></li>
                 <li><a href="terminations_log.php">Terminations Log</a></li>
+                <li><a href="logout.php">Logout</a></li>
             </ul>
         </div>
 
@@ -33,10 +34,6 @@
                         <label for="emp_id">Delete Employee ID:</label>
                         <input type="text" name="emp_id" required>
                     </div>
-                    <div class="form-group">
-                        <label for="deleting_employee_id">Deleter ID:</label>
-                        <input type="text" name="deleting_employee_id" required>
-                    </div>
                     <button type="submit" class="submit-btn">Delete Employee</button>
                 </form>
             </section>
@@ -50,10 +47,21 @@
 // Include database connection code
 include 'db_connect.php';
 
+// Start or resume the session
+session_start();
+
+// Check if the user is logged in
+if (!isset($_SESSION['emp_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// Retrieve the logged-in user's ID as the deleter ID
+$deleting_employee_id = $_SESSION['emp_id'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve and sanitize form data
     $emp_id = mysqli_real_escape_string($con, $_POST['emp_id']);
-    $deleting_employee_id = mysqli_real_escape_string($con, $_POST['deleting_employee_id']);
 
     // Check if the employee ID exists
     $check_employee_query = "SELECT * FROM employee WHERE emp_id = '$emp_id'";
@@ -62,23 +70,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (mysqli_num_rows($result) === 0) {
         echo "Employee with the specified ID does not exist.";
     } else {
-        // Get the associated emergency_contact_id
-        $get_emergency_contact_query = "SELECT emergency_contact_id FROM employee WHERE emp_id = '$emp_id'";
-        $emergency_contact_result = mysqli_query($con, $get_emergency_contact_query);
+        // Get the associated emergency_contact_id and department_id
+        $get_employee_info_query = "SELECT emergency_contact_id, department_id FROM employee WHERE emp_id = '$emp_id'";
+        $employee_info_result = mysqli_query($con, $get_employee_info_query);
 
-        if ($emergency_contact_row = mysqli_fetch_assoc($emergency_contact_result)) {
-            $emergency_contact_id = $emergency_contact_row['emergency_contact_id'];
+        if ($employee_info_row = mysqli_fetch_assoc($employee_info_result)) {
+            $emergency_contact_id = $employee_info_row['emergency_contact_id'];
+            $department_id = $employee_info_row['department_id'];
+
+            // If the employee is a manager, store manager info for later deletion
+            $manager_info = null;
+            if ($department_id == 2) {
+                $get_manager_info_query = "SELECT * FROM management WHERE emp_id = '$emp_id'";
+                $manager_info_result = mysqli_query($con, $get_manager_info_query);
+
+                if ($manager_info_row = mysqli_fetch_assoc($manager_info_result)) {
+                    $manager_info = $manager_info_row;
+                }
+            }
 
             // Delete the employee
             $delete_employee_query = "DELETE FROM employee WHERE emp_id = '$emp_id'";
 
-            // Delete the associated emergency contact
+            // Delete the employee's emergency contact
             $delete_emergency_query = "DELETE FROM emergencycontact WHERE emergency_contact_id = $emergency_contact_id";
+            mysqli_query($con, $delete_emergency_query);
 
             // Start a transaction
             mysqli_begin_transaction($con);
 
-            if (mysqli_query($con, $delete_employee_query) && mysqli_query($con, $delete_emergency_query)) {
+            if (mysqli_query($con, $delete_employee_query)) {
                 // Commit the transaction
                 mysqli_commit($con);
 
@@ -103,8 +124,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log("Error: " . $delete_employee_query . "\n" . mysqli_error($con), 0);
                 echo "An error occurred while deleting the employee. Please try again later.";
             }
+
+            // If the employee is a manager, delete the stored manager info
+            if ($department_id == 2 && $manager_info) {
+                $delete_stored_manager_query = "DELETE FROM management WHERE emp_id = '{$manager_info['emp_id']}'";
+                mysqli_query($con, $delete_stored_manager_query);
+            }
         } else {
-            echo "Error retrieving emergency contact information.";
+            echo "Error retrieving employee information.";
         }
     }
 }
@@ -112,4 +139,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Close the database connection
 mysqli_close($con);
 ?>
-

@@ -11,13 +11,14 @@
         <div class="sidebar">
             <h3>Kilburnazon</h3>
             <ul>
-                <li><a href="index.php">Dashboard</a></li>
+                <li><a href="dashboard.php">Dashboard</a></li>
                 <li><a href="add_employee.php">Add Employee</a></li>
                 <li><a href="#" class="active">Update Employee</a></li>
                 <li><a href="delete_employee.php">Delete Employee</a></li>
                 <li><a href="display_employees.php">Display Employees</a></li>
                 <li><a href="birthday_employees.php">Birthday Employees</a></li>
                 <li><a href="terminations_log.php">Terminations Log</a></li>
+                <li><a href="logout.php">Logout</a></li>
             </ul>
         </div>
 
