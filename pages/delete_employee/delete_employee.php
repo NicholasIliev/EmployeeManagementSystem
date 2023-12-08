@@ -140,9 +140,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_delete_emergency = mysqli_prepare($con, $delete_emergency_query);
             mysqli_stmt_bind_param($stmt_delete_emergency, "s", $emergency_contact_id);
 
+            // Log the termination in terminations_log
+            $termination_date = date("Y-m-d");
+            $termination_time = date("H:i:s");
+
+            $log_termination_query = "INSERT INTO terminations_log (emp_id, termination_date, termination_time, deleting_employee_id) VALUES (?, ?, ?, ?)";
+            $stmt_log_termination = mysqli_prepare($con, $log_termination_query);
+            mysqli_stmt_bind_param($stmt_log_termination, "ssss", $emp_id, $termination_date, $termination_time, $deleting_employee_id);
+
             mysqli_begin_transaction($con);
 
-            if (mysqli_stmt_execute($stmt_delete_employee) && mysqli_stmt_execute($stmt_delete_emergency)) {
+            if (mysqli_stmt_execute($stmt_delete_employee) && mysqli_stmt_execute($stmt_delete_emergency) && mysqli_stmt_execute($stmt_log_termination)) {
                 mysqli_commit($con);
                 echo "Deleted employee and associated records successfully!";
             } else {
@@ -157,4 +165,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 mysqli_close($con);
 ?>
-
