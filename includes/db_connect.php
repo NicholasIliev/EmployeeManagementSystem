@@ -4,7 +4,7 @@
 $serverName = 'localhost';
 $username = 'root';
 $password = '';
-$database = 'kilburnazon5';
+$database = 'kilburnazon';
 
 // Create a database connection
 $con = mysqli_connect($serverName, $username, $password, $database);

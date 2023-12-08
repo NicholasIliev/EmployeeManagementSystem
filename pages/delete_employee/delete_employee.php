@@ -56,7 +56,6 @@ if (!isset($_SESSION['emp_id'])) {
 // Get logged-in employee's ID
 $deleting_employee_id = $_SESSION['emp_id'];
 
-// Function to get the department table name
 function getDepartmentTable($department_id) {
     switch ($department_id) {
         case 1: // HR
@@ -67,7 +66,6 @@ function getDepartmentTable($department_id) {
             return "packagers";
         case 4: // Drivers
             return "driver";
-        // Add more cases as needed for other departments
         default:
             return "";
     }
