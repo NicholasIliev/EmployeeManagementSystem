@@ -36,9 +36,11 @@
             $selectQuery = "SELECT emp_id, name, dob FROM employee WHERE MONTH(dob) = $currentMonth
                             ORDER BY DAY(dob)";
 
+            // Execute the query
             $result = mysqli_query($con, $selectQuery);
-
+            // Check if there are results    
             if ($result && mysqli_num_rows($result) > 0) {
+                // Display results in an HTML table
                 echo '<div style="text-align: center;">';
 
                 echo "<table border='1' align='center' style='width: 80%; margin-top: 20px; background-color: white;'>
@@ -47,7 +49,7 @@
                             <th style='padding: 8px;'>Name</th>
                             <th style='padding: 8px;'>Date of Birth</th>
                         </tr>";
-
+                // Loop through the result set and output each row
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo "<tr>
                             <td>{$row['emp_id']}</td>

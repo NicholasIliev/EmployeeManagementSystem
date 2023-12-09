@@ -138,7 +138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $param_types .= "s";
             $param_values[] = $emp_id;
 
-            echo "Debugging: $update_query\n";
             print_r($param_values);
 
             $stmt = mysqli_prepare($con, $update_query);

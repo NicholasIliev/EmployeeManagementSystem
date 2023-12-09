@@ -207,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $result_packager = mysqli_query($con, $get_highest_packager_id_query);
                     $row_packager = mysqli_fetch_assoc($result_packager);
                     $max_packager_id = $row_packager['max_packager_id'];
-                    $next_packager_id = $max_packager_id + 1;
+                    $next_packager_id = $max_packager_id + 6000;
                     $random_department_id = $next_packager_id;
 
                     $insert_packager_query = "INSERT INTO packagers (emp_id, packager_id) VALUES (?, ?)";
