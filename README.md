@@ -1,7 +1,5 @@
 # Employee Management System
 
-## Overview
-
 The **Employee Management System** is a web-based application designed for managing employee information within an organization. It provides features for adding, updating, and deleting employee records, along with functionalities to manage associated data such as emergency contacts and employee termination logging.
 
 ## Features
