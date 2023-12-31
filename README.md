@@ -24,6 +24,10 @@ The project is organized into the following main components:
 - **PHP Scripts**: Backend scripts for handling various functionalities.
 - **Frontend**: HTML and CSS files for user interface design.
 
+## Entity Relationship Diagram
+
+![ERD](schema/ERD.png)
+
 ## Setup Instructions
 
 1. Clone the repository to your local machine.
